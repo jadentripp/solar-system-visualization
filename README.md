@@ -12,7 +12,33 @@ An interactive 3D visualization of our solar system using Three.js.
 
 ## Demo
 
-To see the visualization in action, simply open the `index.html` file in your web browser.
+To see the visualization in action, you need to serve the files through a web server. The easiest way is to use Python's built-in HTTP server:
+
+### Using Python 3:
+
+1. Open a terminal or command prompt
+2. Navigate to the directory containing the project files
+3. Run the following command:
+   ```
+   python -m http.server
+   ```
+   or
+   ```
+   python3 -m http.server
+   ```
+4. Open your browser and go to `http://localhost:8000`
+
+### Using Python 2:
+
+1. Open a terminal or command prompt
+2. Navigate to the directory containing the project files
+3. Run the following command:
+   ```
+   python -m SimpleHTTPServer
+   ```
+4. Open your browser and go to `http://localhost:8000`
+
+This is necessary because the visualization uses JavaScript features that require it to be served from a web server rather than opened directly as a file.
 
 ## Controls
 
@@ -59,4 +85,6 @@ This visualization uses Three.js for 3D rendering and OrbitControls for camera m
 To run the visualization locally:
 
 1. Clone this repository
-2. Make sure the `textures`
+2. Navigate to the project directory
+3. Start a local web server using Python (as described in the Demo section)
+4. Open your browser and visit http://localhost:8000
