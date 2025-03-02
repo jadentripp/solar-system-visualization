@@ -88,3 +88,13 @@ To run the visualization locally:
 2. Navigate to the project directory
 3. Start a local web server using Python (as described in the Demo section)
 4. Open your browser and visit http://localhost:8000
+
+## Development Tools
+
+This project was developed with the assistance of:
+
+- **Claude 3.7 Sonnet**: Anthropic's most advanced AI model, featuring extended thinking capabilities and specialized skills in coding and front-end web development. Claude 3.7 Sonnet provides step-by-step reasoning and can handle complex programming tasks with high accuracy.
+
+- **Cursor AI**: An intelligent code editor that integrates AI assistants like Claude directly into the development workflow. Cursor enhances productivity through features like code generation, explanation, and refactoring, making it the ideal environment for building complex visualizations like this one.
+
+The combination of Claude 3.7 Sonnet's reasoning capabilities and Cursor AI's integrated development environment made it possible to efficiently design and implement this interactive solar system visualization.
