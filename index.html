@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: white;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 500;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background-color: rgba(10, 15, 30, 0.75);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            max-height: 60vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: opacity 0.3s ease;
+        }
+        #controls:hover {
+            opacity: 1;
+        }
+        #controls button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: linear-gradient(to bottom, #334466, #1a2238);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #controls button:hover {
+            background: linear-gradient(to bottom, #445588, #2a3255);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        #controls button:active {
+            transform: translateY(1px);
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background-color: rgba(10, 20, 40, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #init-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #init-button:hover {
+            background: linear-gradient(to bottom, #41a9ee, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        #loading-spinner {
+            border: 5px solid #333;
+            border-top: 5px solid #3498db;
+            border-right: 5px solid #f1c40f;
+            border-bottom: 5px solid #e74c3c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loading-status {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #ccc;
+        }
+        #planet-info {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background-color: rgba(10, 15, 30, 0.75);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #planet-info:hover {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+        #scale-info {
+            font-style: italic;
+            margin-top: 15px;
+            padding: 15px;
+            font-size: 14px;
+            color: #aaa;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+        .planet-details {
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .planet-details:hover {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 10px;
+            transform: translateX(5px);
+        }
+        h3 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #fff;
+        }
+        h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .moon-button {
+            background: linear-gradient(to bottom, #2a4c63, #1a3a50) !important;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            margin: 3px 5px;
+            border: 1px solid rgba(78, 123, 150, 0.5) !important;
+            flex: 0 0 auto;
+        }
+        .moon-button:hover {
+            background: linear-gradient(to bottom, #3b5d73, #2a4c63) !important;
+        }
+        .moon-container {
+            margin-left: 15px;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: rgba(30, 40, 50, 0.9);
+            border-radius: 8px;
+            border-left: 3px solid #4e7b96;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            position: absolute;
+            left: 30px;
+            top: 240px;
+            min-width: 200px;
+            max-width: 280px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .moon-container:hover {
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+        .drag-handle {
+            width: 100%;
+            cursor: move;
+            user-select: none;
+            color: #aabbcc;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .moon-container::before {
+            content: attr(data-planet) "'s Moons";
+            display: block;
+            font-size: 1em;
+            font-weight: 500;
+            color: #bbd;
+            margin: 5px 0 15px 0;
+            text-align: center;
+            text-transform: capitalize;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+        .back-button {
+            background: linear-gradient(to bottom, #444, #333) !important;
+            color: #fff;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .back-button:hover {
+            background: linear-gradient(to bottom, #555, #444) !important;
+            transform: translateY(-2px);
+        }
+        .back-button:active {
+            transform: translateY(1px);
+        }
+        .section-header {
+            color: #ddd;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            font-style: italic;
+            background-color: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+        #info-panel {
+            transition: all 0.3s ease;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #controls, #planet-info {
+                max-width: 80%;
+                max-height: 40vh;
+            }
+            
+            #controls {
+                left: 10px;
+                bottom: 10px;
+            }
+            
+            #planet-info {
+                right: 10px;
+                top: 10px;
+            }
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            position: relative;
+            background: linear-gradient(to bottom right, #0a1525, #162040);
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 15px;
+            width: 80%;
+            max-width: 700px;
+            color: white;
+            animation: modalFadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #3498db;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .welcome-info {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .welcome-info h3 {
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 8px;
+            margin: 20px 0 15px;
+        }
+        
+        .welcome-info ul {
+            padding-left: 25px;
+        }
+        
+        .welcome-info li {
+            margin-bottom: 10px;
+        }
+        
+        .welcome-image {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        
+        .welcome-image img {
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(70, 130, 180, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .welcome-note {
+            font-style: italic;
+            padding: 15px;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        #welcome-close {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 30px;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        #welcome-close:hover {
+            background: linear-gradient(to bottom, #41a9ee, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Solar System Visualization - Use mouse to navigate</div>
+    <div id="loading">
+        <div>Loading Solar System...</div>
+        <div id="loading-spinner"></div>
+        <div id="loading-status">Initializing textures...</div>
+        <div style="margin-top: 15px; font-size: 14px; color: #aaa; max-width: 400px; text-align: center;">
+            Some textures will be loaded from online sources. If you're offline or have connection issues, fallback textures will be generated automatically.
+        </div>
+        <button id="init-button">Start Anyway</button>
+    </div>
+    
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to the Solar System Explorer!</h2>
+            <div class="welcome-info">
+                <p>This interactive 3D visualization allows you to explore our solar system with accurate relative planet sizes and orbital distances.</p>
+                
+                <h3>Getting Started:</h3>
+                <ul>
+                    <li><strong>Navigation:</strong> Click and drag to rotate, scroll to zoom in/out</li>
+                    <li><strong>Planet Selection:</strong> Click any planet button in the bottom panel to focus on it</li>
+                    <li><strong>Views:</strong> Use the view controls for different perspectives of the solar system</li>
+                    <li><strong>Moons:</strong> When focused on a planet with moons, you can select them for a closer look</li>
+                </ul>
+                
+                <div class="welcome-image">
+                    <img src="https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth.jpg" alt="Earth" width="100">
+                    <p>Earth - Our Home Planet</p>
+                </div>
+                
+                <p class="welcome-note">We've created an initial animation to help you get oriented. Sit back for a few seconds and enjoy the view!</p>
+            </div>
+            <button id="welcome-close">Begin Exploration</button>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <h3>View Controls</h3>
+        <button id="overview">Overview</button>
+        <button id="reset">Reset View</button>
+        <button id="top-view">Top View</button>
+        <button id="sun-view">Sun View</button>
+        <h3>Planet Focus</h3>
+        <div id="planet-header" class="section-header">Planets in our Solar System</div>
+        <div id="planet-buttons"></div>
+    </div>
+    <div id="planet-info">
+        <h3>Solar System Information</h3>
+        <div id="scale-info">
+            This visualization uses realistic proportions for planet sizes relative to each other, but 
+            distances between planets are compressed. Earth's size is the base for scaling other planets.
+        </div>
+        <div class="planet-details">
+            <h4>Sun</h4>
+            <p>Diameter: 109x Earth's</p>
+            <p>Color: Yellow</p>
+        </div>
+        <div class="planet-details">
+            <h4>Mercury</h4>
+            <p>Diameter: 0.38x Earth's</p>
+            <p>Color: Gray</p>
+        </div>
+        <div class="planet-details">
+            <h4>Venus</h4>
+            <p>Diameter: 0.95x Earth's</p>
+            <p>Color: Yellowish white</p>
+        </div>
+        <div class="planet-details">
+            <h4>Earth</h4>
+            <p>Diameter: Base unit (1x)</p>
+            <p>Color: Blue</p>
+            <p>Moon: 0.27x Earth's size</p>
+        </div>
+        <div class="planet-details">
+            <h4>Mars</h4>
+            <p>Diameter: 0.53x Earth's</p>
+            <p>Color: Red</p>
+        </div>
+        <div class="planet-details">
+            <h4>Jupiter</h4>
+            <p>Diameter: 11.2x Earth's</p>
+            <p>Color: Beige with bands</p>
+        </div>
+        <div class="planet-details">
+            <h4>Saturn</h4>
+            <p>Diameter: 9.45x Earth's</p>
+            <p>Color: Light beige</p>
+            <p>Rings: Extend 2.3x the planet's radius</p>
+        </div>
+        <div class="planet-details">
+            <h4>Uranus</h4>
+            <p>Diameter: 4.01x Earth's</p>
+            <p>Color: Light blue</p>
+        </div>
+        <div class="planet-details">
+            <h4>Neptune</h4>
+            <p>Diameter: 3.88x Earth's</p>
+            <p>Color: Deep blue</p>
+        </div>
+    </div>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html> 
